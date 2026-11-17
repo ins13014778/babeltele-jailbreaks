@@ -1,0 +1,73 @@
+NOTICE
+======
+
+This repository is a derivative work. Two separate bodies of authorship are
+involved, and they are licensed differently.
+
+1. Upstream prompt collection
+-----------------------------
+
+Source : https://github.com/togg53192-cmd/jailbreaks
+Author : togg53192-cmd and contributors
+Import : jailbreaks-main, downloaded 2026-11
+
+The upstream repository declares no license file and no license field on GitHub.
+Under default copyright that means all rights are reserved by the authors: no
+license is granted to copy, modify or redistribute the prompt text.
+
+It is reproduced here as a clearly-attributed derivative for research and
+interoperability purposes. Attribution is stated in README.md and again in this
+file. Nothing here claims ownership of the original prompt text.
+
+If you are a rights holder and want attribution adjusted, or want material
+removed, open an issue and it will be handled.
+
+2. Transformation, tooling and presentation
+-------------------------------------------
+
+Author : ins13014778
+License: MIT (see LICENSE)
+
+This covers:
+
+  - the BabelTele rewrite of each prompt (the converted surface form)
+  - tools/CONVENTIONS.md, the rewrite specification
+  - tools/exemplar.md, the worked example
+  - tools/audit.py, tools/missing.py, tools/stray.py, tools/make_index.py
+  - tools/babeltele.py, tools/ui.html, tools/prompts/, tools/variants.json
+  - INDEX.md and README.md
+
+The conversion is independent work: each document was re-authored against a
+written spec, not produced by substitution cipher or automated find-and-replace.
+Compression statistics and fidelity checks are reproducible with the scripts in
+tools/.
+
+3. Third-party material
+-----------------------
+
+The BabelTele concept, its elicitation prompts, and the numbers quoted from the
+paper are from:
+
+  Jiayi Zhu, Haoxuan Peng, Junxi Wang, Liang Ke, Chen Zhang, Linfeng Zhang.
+  "Large Language Models Do Not Always Need Readable Language."
+  arXiv:2606.19857, 2026.
+
+The prompt templates in tools/prompts/ are transcriptions of that paper's
+Appendix C, included so the conversion is reproducible. They remain the work of
+the paper's authors.
+
+This repository is not affiliated with, sponsored by, or endorsed by
+togg53192-cmd, the paper's authors, or any model provider named in the prompts.
+
+4. Scope
+--------
+
+No behavioural claim is made. Nobody ran the converted prompts against the
+models they target, and no measurement in this repository shows that a
+compressed prompt steers a model the same way the original does. Compression
+ratio and literal fidelity were measured; behavioural equivalence was not.
+
+The upstream collection presents itself as research and educational material on
+instruction hierarchies and policy overrides. That framing is inherited here.
+Compliance with any service's terms of use is the responsibility of whoever
+runs these prompts.

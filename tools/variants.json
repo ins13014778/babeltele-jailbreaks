@@ -1,0 +1,104 @@
+{
+  "default": {
+    "name": "BabelTele 默认（论文附录 C.1）",
+    "task": "compress",
+    "file": "default.md",
+    "note": "最简版：audience != human + 四原则。论文 4.2 / 4.4 / 4.5 的主力提示词，也是复现论文数字应该先用的一条。"
+  },
+  "BT-P1": {
+    "name": "Adaptive Symbolic Collapse",
+    "task": "compress",
+    "file": "BT-P1.md",
+    "note": "极端压缩 + 五维语义清单双约束；要求模型自己发明分隔符。约束最重的一条。"
+  },
+  "BT-P2": {
+    "name": "Refined Zero-Overhead Compression",
+    "task": "compress",
+    "file": "BT-P2.md",
+    "note": "零开销 K=V 结构 + 精确值锁定 + 反幻觉；禁止 JSON/数组括号。适合表格型、参数型文档。"
+  },
+  "BT-P3": {
+    "name": "Minimal Lossless Objective",
+    "task": "compress",
+    "file": "BT-P3.md",
+    "note": "最短的高层指令，不给任何 schema。用来测「收益有多少来自提示词工程、多少来自模型自发行为」。"
+  },
+  "BT-P4": {
+    "name": "Structured Omnilingual Mapping",
+    "task": "compress",
+    "file": "BT-P4.md",
+    "note": "八条结构化字段规则 + 第 9 条跨语言选词。产出形态最像「带 schema 的记录」。"
+  },
+  "BT-P5": {
+    "name": "Canonical Omnilingual-Symbolic",
+    "task": "compress",
+    "file": "BT-P5.md",
+    "note": "BabelTele 的「标准形态」：多语言选词 + 符号坍缩 + 通用性 + 无损。"
+  },
+  "BT-P6": {
+    "name": "Structured Mapping Control",
+    "task": "compress",
+    "file": "BT-P6.md",
+    "note": "实体/数量/数学/流程/条件/比较/占位符的 schema 式保留，不含跨语言指令。"
+  },
+  "BT-P7": {
+    "name": "Canonical BabelTele Objective",
+    "task": "compress",
+    "file": "BT-P7.md",
+    "note": "核心目标的紧凑写法，与 default 极接近（仅措辞差异）。"
+  },
+  "BT-P8": {
+    "name": "Fixed Symbolic Mapping Rules",
+    "task": "compress",
+    "file": "BT-P8.md",
+    "note": "强制单字符锚点（S[] / *() / ?…=> / !obj:），产出最规整、最像代码，也最容易机器解析。"
+  },
+  "BT-P9": {
+    "name": "Structured Semantic Mapping",
+    "task": "compress",
+    "file": "BT-P9.md",
+    "note": "与 BT-P6 文本完全相同（论文原样如此）。保留是为了对齐论文的 13 个变体编号。"
+  },
+  "BT-P10": {
+    "name": "LLM-Native Compressor",
+    "task": "compress",
+    "file": "BT-P10.md",
+    "note": "与 BT-P5 文本完全相同（论文原样如此）。"
+  },
+  "BT-P11": {
+    "name": "Compact Symbolic Mapping",
+    "task": "compress",
+    "file": "BT-P11.md",
+    "note": "三条极简规则：符号映射 + 数组压平 + 硬数据保真。最轻量。"
+  },
+  "BT-P12": {
+    "name": "Free-Emergence Attention Checklist",
+    "task": "compress",
+    "file": "BT-P12.md",
+    "note": "表层形态完全自由，只用一个语义维度清单约束无损性。压缩率通常最高、可读性最低。"
+  },
+  "BT-P13": {
+    "name": "ASCII Anchor Skeleton",
+    "task": "compress",
+    "file": "BT-P13.md",
+    "note": "纯 ASCII 锚点（#topic / @entity / $param / A<>B），故意触发模型的「代码解析」注意力。"
+  },
+  "expand": {
+    "name": "反向还原（论文没有的实验）",
+    "task": "expand",
+    "file": "expand.md",
+    "note": "把 BabelTele 还原成自然语言。用来做往返保真测试——判断它到底是「编码」还是「摘要」的关键。"
+  },
+  "read": {
+    "name": "压缩文本阅读问答",
+    "task": "read",
+    "file": "read.md",
+    "note": "只用给定上下文回答，缺证据就回 INSUFFICIENT。配合 verify 用。"
+  },
+  "summary": {
+    "name": "可读摘要对照组",
+    "task": "compress",
+    "file": "summary.md",
+    "note": "论文缺的那个 ablation：同等压缩比下的纯可读英文摘要。用它和 BabelTele 比，才知道「不可读」本身贡献了多少。"
+  }
+}

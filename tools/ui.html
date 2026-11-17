@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BabelTele 转换器</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #161b22;
+    --line: #262c36;
+    --ink: #d7dde5;
+    --dim: #7d8794;
+    --accent: #7ee0c0;
+    --accent-dim: #2d6b5b;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; margin: 0; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 14px/1.6 -apple-system, "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    display: flex; flex-direction: column;
+  }
+  header {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 10px 16px; border-bottom: 1px solid var(--line);
+    background: var(--panel);
+  }
+  header h1 { font-size: 15px; margin: 0 12px 0 0; font-weight: 600; letter-spacing: .02em; }
+  header h1 span { color: var(--accent); }
+  select, input, button, textarea {
+    font-family: inherit; font-size: 13px; color: var(--ink);
+    background: #0b0f14; border: 1px solid var(--line); border-radius: 6px;
+    padding: 6px 9px; outline: none;
+  }
+  select:focus, input:focus, textarea:focus { border-color: var(--accent-dim); }
+  input.model { width: 190px; }
+  button { cursor: pointer; transition: background .15s, border-color .15s; }
+  button:hover { border-color: var(--accent-dim); }
+  button.primary {
+    background: var(--accent-dim); border-color: var(--accent-dim);
+    color: #eafff8; font-weight: 600;
+  }
+  button.primary:hover { background: #3a8774; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  .spacer { flex: 1; }
+  main {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1px; background: var(--line); min-height: 0;
+  }
+  .pane { display: flex; flex-direction: column; background: var(--bg); min-height: 0; }
+  .pane-head {
+    display: flex; align-items: center; gap: 8px;
+    padding: 7px 12px; font-size: 12px; color: var(--dim);
+    border-bottom: 1px solid var(--line);
+  }
+  .pane-head b { color: var(--ink); font-weight: 600; }
+  textarea {
+    flex: 1; border: 0; border-radius: 0; padding: 14px 16px;
+    resize: none; font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px; line-height: 1.65; background: var(--bg);
+  }
+  textarea::placeholder { color: #4b545f; }
+  #out {
+    flex: 1; margin: 0; padding: 14px 16px; overflow: auto; white-space: pre-wrap;
+    word-break: break-word; font-family: "Cascadia Code", "Consolas", monospace;
+    font-size: 13px; line-height: 1.65;
+  }
+  #out:empty::before { content: "输出会出现在这里。"; color: #4b545f; }
+  footer {
+    display: flex; align-items: center; gap: 14px; padding: 7px 16px;
+    border-top: 1px solid var(--line); background: var(--panel);
+    font-size: 12px; color: var(--dim); min-height: 34px;
+  }
+  footer .val { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .err { color: #ff7b72; }
+  .pulse { animation: p 1.2s ease-in-out infinite; }
+  @keyframes p { 0%,100% { opacity: .3 } 50% { opacity: 1 } }
+  @media (max-width: 860px) {
+    main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Babel<span>Tele</span></h1>
+  <select id="variant" title="提示词变体"></select>
+  <input id="model" class="model" placeholder="模型名（留空用默认）">
+  <button id="btnConvert" class="primary">压缩 →</button>
+  <button id="btnExpand">← 还原</button>
+  <button id="btnPrompt" title="把拼好的提示词复制到左侧">取提示词</button>
+  <div class="spacer"></div>
+  <button id="btnCopy">复制输出</button>
+  <button id="btnClear">清空</button>
+</header>
+
+<main>
+  <section class="pane">
+    <div class="pane-head"><b>原文</b><span id="inStat">0 字</span></div>
+    <textarea id="src" placeholder="粘贴要压缩的文本。选中一段再点「压缩」可只处理选中部分。"></textarea>
+  </section>
+  <section class="pane">
+    <div class="pane-head"><b id="outTitle">输出</b><span id="outStat"></span></div>
+    <pre id="out"></pre>
+  </section>
+</main>
+
+<footer>
+  <span id="status">就绪</span>
+  <div class="spacer" style="flex:1"></div>
+  <span>tokens <span class="val" id="tokIn">-</span> → <span class="val" id="tokOut">-</span></span>
+  <span>保留率 <span class="val" id="ratio">-</span></span>
+  <span class="val" id="elapsed"></span>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let busy = false;
+
+async function loadVariants() {
+  try {
+    const r = await fetch('/api/variants');
+    const data = await r.json();
+    const sel = $('variant');
+    sel.innerHTML = '';
+    for (const [id, meta] of Object.entries(data)) {
+      const o = document.createElement('option');
+      o.value = id;
+      o.textContent = `${id} — ${meta.name}`;
+      o.title = meta.note || '';
+      if (id === 'default') o.selected = true;
+      sel.appendChild(o);
+    }
+  } catch (e) {
+    $('status').innerHTML = '<span class="err">无法读取变体列表</span>';
+  }
+}
+
+function setBusy(on, label) {
+  busy = on;
+  for (const id of ['btnConvert', 'btnExpand', 'btnPrompt']) $(id).disabled = on;
+  $('status').textContent = label || (on ? '处理中…' : '就绪');
+  $('status').classList.toggle('pulse', on);
+}
+
+function updateInStat() {
+  $('inStat').textContent = `${$('src').value.length} 字`;
+}
+$('src').addEventListener('input', updateInStat);
+
+async function call(path, payload, title) {
+  if (busy) return;
+  setBusy(true, '请求中…');
+  $('outTitle').textContent = title;
+  try {
+    const r = await fetch(path, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    $('out').textContent = data.output;
+    $('tokIn').textContent = data.tokens_in;
+    $('tokOut').textContent = data.tokens_out;
+    $('ratio').textContent = data.retention == null ? '-' : (data.retention * 100).toFixed(1) + '%';
+    $('elapsed').textContent = data.seconds + 's';
+    $('outStat').textContent = `${data.output.length} 字 · ${data.model}`;
+    $('status').textContent = '完成';
+  } catch (e) {
+    $('out').textContent = '';
+    $('status').innerHTML = `<span class="err">${e.message}</span>`;
+  } finally {
+    setBusy(false);
+    if ($('status').textContent === '处理中…') $('status').textContent = '就绪';
+  }
+}
+
+function selectedText() {
+  const ta = $('src');
+  return ta.value.slice(ta.selectionStart, ta.selectionEnd).trim() || ta.value;
+}
+
+function common() {
+  const p = { text: selectedText() };
+  const m = $('model').value.trim();
+  if (m) p.model = m;
+  return p;
+}
+
+$('btnConvert').onclick = () => {
+  if (!selectedText().trim()) { $('status').textContent = '先粘贴原文'; return; }
+  call('/api/convert', { ...common(), variant: $('variant').value }, 'BabelTele');
+};
+
+$('btnExpand').onclick = () => {
+  if (!selectedText().trim()) { $('status').textContent = '先粘贴 BabelTele 文本'; return; }
+  call('/api/expand', common(), '还原');
+};
+
+$('btnPrompt').onclick = async () => {
+  const text = selectedText();
+  if (!text.trim()) { $('status').textContent = '先粘贴原文'; return; }
+  setBusy(true, '拼装中…');
+  try {
+    const r = await fetch('/api/prompt', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ variant: $('variant').value, text })
+    });
+    const data = await r.json();
+    if (!r.ok) throw new Error(data.error || `HTTP ${r.status}`);
+    $('src').value = data.prompt;
+    updateInStat();
+    $('status').textContent = '提示词已放到左侧，可直接复制到任意对话界面';
+  } catch (e) {
+    $('status').innerHTML = `<span class="err">${e.message}</span>`;
+  } finally {
+    setBusy(false);
+  }
+};
+
+$('btnCopy').onclick = async () => {
+  const text = $('out').textContent;
+  if (!text) return;
+  try {
+    await navigator.clipboard.writeText(text);
+    $('status').textContent = '已复制';
+  } catch {
+    $('status').textContent = '复制失败，请手动选择';
+  }
+};
+
+$('btnClear').onclick = () => {
+  $('src').value = '';
+  $('out').textContent = '';
+  $('tokIn').textContent = $('tokOut').textContent = $('ratio').textContent = '-';
+  $('elapsed').textContent = '';
+  $('outStat').textContent = '';
+  updateInStat();
+  $('status').textContent = '就绪';
+};
+
+loadVariants();
+updateInStat();
+</script>
+</body>
+</html>
