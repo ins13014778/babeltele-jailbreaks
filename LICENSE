@@ -19,12 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This license covers the tooling (tools/) and the transformation itself: the
-rewrite spec, the converted surface form, the index and the audit scripts.
-
-It does not cover the underlying prompt text, which originates from
-https://github.com/togg53192-cmd/jailbreaks and remains with its authors.
-See NOTICE.
